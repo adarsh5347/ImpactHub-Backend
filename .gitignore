@@ -1,0 +1,35 @@
+# Build output
+/target/
+**/target/
+
+# Logs
+*.log
+logs/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.env
+application-local.properties
+application-prod.properties
+*.pem
+*.p12
+*.jks
+*.keystore
+secrets/
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Java / Maven
+.mvn/timing.properties
