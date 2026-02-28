@@ -53,11 +53,12 @@ public class EmailService {
                 """.formatted(safeName)
         );
 
+        log.info("Email sending started: type=welcome, to={}", recipientEmail);
         try {
             mailSender.send(message);
+            log.info("Email sent successfully: type=welcome, to={}", recipientEmail);
         } catch (MailException ex) {
             log.error("Failed to send welcome email to {}", recipientEmail, ex);
-            throw ex;
         }
     }
 
@@ -78,11 +79,12 @@ public class EmailService {
                 """
         );
 
+        log.info("Email sending started: type=smtp-test, to={}", recipientEmail);
         try {
             mailSender.send(message);
+            log.info("Email sent successfully: type=smtp-test, to={}", recipientEmail);
         } catch (MailException ex) {
             log.error("Failed to send SMTP test email to {}", recipientEmail, ex);
-            throw ex;
         }
     }
 
@@ -162,11 +164,12 @@ public class EmailService {
         message.setSubject(subject);
         message.setText(body);
 
+        log.info("Email sending started: type=ngo-decision, to={}, subject={}", recipientEmail, subject);
         try {
             mailSender.send(message);
+            log.info("Email sent successfully: type=ngo-decision, to={}, subject={}", recipientEmail, subject);
         } catch (MailException ex) {
             log.error("Failed to send NGO decision email to {}", recipientEmail, ex);
-            throw ex;
         }
     }
 }

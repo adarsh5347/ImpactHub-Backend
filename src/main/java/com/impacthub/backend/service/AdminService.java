@@ -22,7 +22,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,7 +36,7 @@ public class AdminService {
     private final VolunteerEnrollmentRepository volunteerEnrollmentRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
-    private final EmailService emailService;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public PaginatedResponse<AdminNgoListItemResponse> listNgos(ApprovalStatus status, String search, int page, int limit) {
@@ -83,6 +82,7 @@ public class AdminService {
 
     @Transactional
     public AdminNgoDetailResponse approveNgo(Long ngoId, String adminEmail) {
+        log.info("NGO approval started for ngoId={} by admin={}", ngoId, adminEmail);
         NGO ngo = ngoRepository.findById(ngoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NGO not found"));
 
@@ -101,16 +101,14 @@ public class AdminService {
         ngo.setVerificationDate(LocalDateTime.now());
 
         NGO saved = ngoRepository.save(ngo);
-        try {
-            emailService.sendNgoApprovedEmail(saved.getEmail(), saved.getNgoName());
-        } catch (MailException ex) {
-            log.error("NGO approved but approval email failed for {}", saved.getEmail(), ex);
-        }
+        log.info("NGO approval completed for ngoId={}; triggering async approval notification", saved.getId());
+        notificationService.notifyNgoApproved(saved);
         return toDetail(saved);
     }
 
     @Transactional
     public AdminNgoDetailResponse rejectNgo(Long ngoId, String adminEmail, String reason) {
+        log.info("NGO rejection started for ngoId={} by admin={}", ngoId, adminEmail);
         NGO ngo = ngoRepository.findById(ngoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NGO not found"));
 
@@ -129,16 +127,14 @@ public class AdminService {
         ngo.setVerificationDate(null);
 
         NGO saved = ngoRepository.save(ngo);
-        try {
-            emailService.sendNgoRejectedEmail(saved.getEmail(), saved.getNgoName(), reason);
-        } catch (MailException ex) {
-            log.error("NGO rejected but rejection email failed for {}", saved.getEmail(), ex);
-        }
+        log.info("NGO rejection completed for ngoId={}; triggering async rejection notification", saved.getId());
+        notificationService.notifyNgoRejected(saved, reason);
         return toDetail(saved);
     }
 
     @Transactional
     public AdminNgoDetailResponse suspendNgo(Long ngoId, String adminEmail, String reason) {
+        log.info("NGO suspension started for ngoId={} by admin={}", ngoId, adminEmail);
         NGO ngo = ngoRepository.findById(ngoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NGO not found"));
 
@@ -151,11 +147,8 @@ public class AdminService {
         ngo.setIsVerified(false);
 
         NGO saved = ngoRepository.save(ngo);
-        try {
-            emailService.sendNgoSuspendedEmail(saved.getEmail(), saved.getNgoName(), reason);
-        } catch (MailException ex) {
-            log.error("NGO suspended but suspension email failed for {}", saved.getEmail(), ex);
-        }
+        log.info("NGO suspension completed for ngoId={}; triggering async suspension notification", saved.getId());
+        notificationService.notifyNgoSuspended(saved, reason);
         return toDetail(saved);
     }
 
