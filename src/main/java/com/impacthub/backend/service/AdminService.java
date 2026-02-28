@@ -102,7 +102,7 @@ public class AdminService {
 
         NGO saved = ngoRepository.save(ngo);
         log.info("NGO approval completed for ngoId={}; triggering async approval notification", saved.getId());
-        notificationService.notifyNgoApproved(saved);
+        notificationService.sendApprovalEmail(saved);
         return toDetail(saved);
     }
 

@@ -10,19 +10,19 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class MailRuntimeProbe {
 
-    @Value("${spring.mail.username:}")
-    private String mailUsername;
+    @Value("${resend.api-key:${RESEND_API_KEY:}}")
+    private String resendApiKey;
 
-    @Value("${spring.mail.password:}")
-    private String mailPassword;
+    @Value("${resend.from-email:${RESEND_FROM_EMAIL:onboarding@resend.dev}}")
+    private String resendFromEmail;
 
-    @Value("${mail.enabled:false}")
+    @Value("${mail.enabled:${MAIL_ENABLED:true}}")
     private boolean mailEnabled;
 
     @EventListener(ApplicationReadyEvent.class)
     public void logMailRuntimeSettings() {
-        log.info("Mail runtime probe: spring.mail.username={}", mailUsername);
-        log.info("Mail runtime probe: spring.mail.password.present={}", mailPassword != null && !mailPassword.isBlank());
+        log.info("Mail runtime probe: resend.from-email={}", resendFromEmail);
+        log.info("Mail runtime probe: resend.api-key.present={}", resendApiKey != null && !resendApiKey.isBlank());
         log.info("Mail runtime probe: mail.enabled={}", mailEnabled);
     }
 }

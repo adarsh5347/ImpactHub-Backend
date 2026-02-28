@@ -16,7 +16,6 @@ import com.impacthub.backend.repository.VolunteerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,7 +77,7 @@ public class AuthService {
         volunteerRepository.save(volunteer);
         try {
             emailService.sendWelcomeEmail(savedUser.getEmail(), volunteer.getFullName());
-        } catch (MailException ex) {
+        } catch (Exception ex) {
             log.error("Volunteer registered but welcome email failed for {}", savedUser.getEmail(), ex);
         }
 

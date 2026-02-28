@@ -14,7 +14,7 @@ public class NotificationService {
     private final EmailService emailService;
 
     @Async
-    public void notifyNgoApproved(NGO ngo) {
+    public void sendApprovalEmail(NGO ngo) {
         log.info("Async approval email dispatch started for ngoId={}", ngo.getId());
         try {
             emailService.sendNgoApprovedEmail(ngo.getEmail(), ngo.getNgoName());
