@@ -30,7 +30,7 @@ public class AuthService {
     private final NGORepository ngoRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final EmailService emailService;
+    private final NotificationService notificationService;
 
     @Value("${admin.email}")
     private String adminEmail;
@@ -75,11 +75,7 @@ public class AuthService {
         volunteer.setEmergencyContactPhone(request.getEmergencyContactPhone());
 
         volunteerRepository.save(volunteer);
-        try {
-            emailService.sendWelcomeEmail(savedUser.getEmail(), volunteer.getFullName());
-        } catch (Exception ex) {
-            log.error("Volunteer registered but welcome email failed for {}", savedUser.getEmail(), ex);
-        }
+        notificationService.sendVolunteerWelcomeEmail(savedUser.getEmail(), volunteer.getFullName());
 
         String token = jwtService.generateToken(savedUser.getEmail(), savedUser.getUserType().name());
 
