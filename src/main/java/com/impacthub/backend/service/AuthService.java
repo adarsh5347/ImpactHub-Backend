@@ -153,6 +153,7 @@ public class AuthService {
         ngo.setApprovalStatus(ApprovalStatus.PENDING);
 
         ngoRepository.save(ngo);
+        notificationService.sendApprovalEmail(ngo);
 
         return new AuthResponse(
                 null,
