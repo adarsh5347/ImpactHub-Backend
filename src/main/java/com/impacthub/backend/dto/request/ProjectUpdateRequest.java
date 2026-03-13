@@ -1,5 +1,7 @@
 package com.impacthub.backend.dto.request;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.impacthub.backend.config.FlexibleLocalDateDeserializer;
 import com.impacthub.backend.entity.Project;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,7 +18,9 @@ public class ProjectUpdateRequest {
     private Project.ProjectStatus status;
     private BigDecimal fundingGoal;
     private BigDecimal fundsRaised;
+    @JsonDeserialize(using = FlexibleLocalDateDeserializer.class)
     private LocalDate startDate;
+    @JsonDeserialize(using = FlexibleLocalDateDeserializer.class)
     private LocalDate endDate;
     private Integer beneficiaries;
     private String imageUrl;
