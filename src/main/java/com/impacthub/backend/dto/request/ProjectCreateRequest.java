@@ -1,5 +1,6 @@
 package com.impacthub.backend.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.impacthub.backend.entity.Project;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,7 +23,9 @@ public class ProjectCreateRequest {
     @NotNull(message = "Funding goal is required")
     private BigDecimal fundingGoal;
 
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate startDate;
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate endDate;
     private Integer beneficiaries;
     private String imageUrl;
