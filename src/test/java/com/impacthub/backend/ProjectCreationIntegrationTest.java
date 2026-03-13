@@ -1,5 +1,6 @@
 package com.impacthub.backend;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -120,7 +121,36 @@ class ProjectCreationIntegrationTest {
                 .andExpect(jsonPath("$.title").value("School Drive"));
     }
 
+    @Test
+    void anonymousUserCanAccessPublicProjectAndNgoProjectListingsButNotNgoDetail() throws Exception {
+        AuthenticatedNgo authenticatedNgo = registerApproveAndLoginNgoWithNgoId();
+
+        mockMvc.perform(post("/api/projects")
+                        .header("Authorization", "Bearer " + authenticatedNgo.token())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title":"Open Access Project",
+                                  "fundingGoal":5000
+                                }
+                                """))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/projects"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/ngos/{ngoId}/projects", authenticatedNgo.ngoId()))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/ngos/{ngoId}", authenticatedNgo.ngoId()))
+                .andExpect(status().isUnauthorized());
+    }
+
     private String registerApproveAndLoginNgo() throws Exception {
+        return registerApproveAndLoginNgoWithNgoId().token();
+    }
+
+    private AuthenticatedNgo registerApproveAndLoginNgoWithNgoId() throws Exception {
         String email = uniqueEmail();
         String password = "Ngo@12345";
         String registrationNumber = uniqueRegistrationNumber();
@@ -156,7 +186,8 @@ class ProjectCreationIntegrationTest {
                 .andReturn();
 
         String loginResponse = loginResult.getResponse().getContentAsString();
-        return loginResponse.split("\"token\":\"")[1].split("\"")[0];
+        String token = loginResponse.split("\"token\":\"")[1].split("\"")[0];
+        return new AuthenticatedNgo(token, ngo.getId());
     }
 
     private String adminToken() {
@@ -169,5 +200,8 @@ class ProjectCreationIntegrationTest {
 
     private String uniqueRegistrationNumber() {
         return "REG-" + UUID.randomUUID();
+    }
+
+    private record AuthenticatedNgo(String token, Long ngoId) {
     }
 }

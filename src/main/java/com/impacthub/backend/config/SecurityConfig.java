@@ -55,11 +55,12 @@ public class SecurityConfig {
                     .requestMatchers("/api/auth/register/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/ngos/logo/upload").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/ngos/cover/upload").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/test/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/ngos/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
-                        .anyRequest().authenticated()
+                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/api/test/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/ngos").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/ngos/*/projects").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/projects", "/api/projects/*").permitAll()
+                    .anyRequest().authenticated()
                 );
 
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
