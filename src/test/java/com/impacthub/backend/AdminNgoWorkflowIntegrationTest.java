@@ -61,6 +61,20 @@ class AdminNgoWorkflowIntegrationTest {
     }
 
     @Test
+    void invalidCredentialsReturnUnauthorizedInsteadOfBadRequest() throws Exception {
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email":"missing-user@example.org",
+                                  "password":"wrong-password"
+                                }
+                                """))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Invalid credentials"));
+    }
+
+    @Test
     void pendingNgoAppearsInAdminList() throws Exception {
         String email = uniqueEmail();
         registerNgo(email, "Ngo@12345", uniqueRegistrationNumber());

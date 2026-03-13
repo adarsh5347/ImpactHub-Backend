@@ -16,9 +16,11 @@ import com.impacthub.backend.repository.VolunteerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +44,7 @@ public class AuthService {
     public AuthResponse registerVolunteer(VolunteerRegistrationRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already registered");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
         }
 
         User user = new User();
@@ -93,11 +95,11 @@ public class AuthService {
     public AuthResponse registerNGO(NGORegistrationRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already registered");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
         }
 
         if (ngoRepository.findByRegistrationNumber(request.getRegistrationNumber()).isPresent()) {
-            throw new RuntimeException("Registration number already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Registration number already exists");
         }
 
         User user = new User();
@@ -177,19 +179,19 @@ public class AuthService {
         }
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
 
         if (Boolean.FALSE.equals(user.getIsActive())) {
-            throw new RuntimeException("Account is deactivated");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is deactivated");
         }
 
         if (user.getUserType() == User.UserType.NGO) {
             NGO ngo = ngoRepository.findByUserId(user.getId())
-                    .orElseThrow(() -> new RuntimeException("NGO profile not found"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NGO profile not found"));
             ApprovalStatus status = ngo.getApprovalStatus() != null ? ngo.getApprovalStatus() : ApprovalStatus.PENDING;
             if (status != ApprovalStatus.APPROVED) {
                 throw blockedNgoException(ngo, status);
@@ -222,7 +224,7 @@ public class AuthService {
     @Transactional(readOnly = true)
     public AuthMeResponse getCurrentUserProfile(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         String fullName;
         if (user.getUserType() == User.UserType.VOLUNTEER) {

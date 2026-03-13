@@ -5,8 +5,6 @@ import com.impacthub.backend.dto.request.NGORegistrationRequest;
 import com.impacthub.backend.dto.request.VolunteerRegistrationRequest;
 import com.impacthub.backend.dto.response.AuthMeResponse;
 import com.impacthub.backend.dto.response.AuthResponse;
-import com.impacthub.backend.dto.response.NgoLoginBlockedResponse;
-import com.impacthub.backend.exception.NgoLoginBlockedException;
 import com.impacthub.backend.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,47 +35,22 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        try {
-            AuthResponse response = authService.login(request);
-            return ResponseEntity.ok(response);
-        } catch (NgoLoginBlockedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                    new NgoLoginBlockedResponse(
-                            e.getCode(),
-                            e.getMessage(),
-                            e.getNgoStatus(),
-                            e.getRejectionReason(),
-                            e.getSuspensionReason()
-                    )
-            );
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(new AuthResponse(null, null, null, e.getMessage()));
-        }
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register/volunteer")
     public ResponseEntity<AuthResponse> registerVolunteer(
             @Valid @RequestBody VolunteerRegistrationRequest request) {
-        try {
-            AuthResponse response = authService.registerVolunteer(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(new AuthResponse(null, null, null, e.getMessage()));
-        }
+        AuthResponse response = authService.registerVolunteer(request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register/ngo")
     public ResponseEntity<AuthResponse> registerNGO(
             @Valid @RequestBody NGORegistrationRequest request) {
-        try {
-            AuthResponse response = authService.registerNGO(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(new AuthResponse(null, null, null, e.getMessage()));
-        }
+        AuthResponse response = authService.registerNGO(request);
+        return ResponseEntity.ok(response);
     }
 }
