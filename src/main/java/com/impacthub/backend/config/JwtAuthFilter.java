@@ -35,14 +35,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         log.debug("JwtAuthFilter hit: {} {}", method, uri);
 
         final String authHeader = request.getHeader("Authorization");
+        final String token = extractToken(authHeader);
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (token == null) {
             log.debug("Authorization header missing or invalid for {} {}", method, uri);
             filterChain.doFilter(request, response);
             return;
         }
-
-        final String token = authHeader.substring(7).trim();
         log.debug("Authorization bearer token detected, tokenLength={}", token.length());
 
         final String email;
@@ -92,5 +91,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String extractToken(String authHeader) {
+        if (authHeader == null) {
+            return null;
+        }
+
+        String trimmedHeader = authHeader.trim();
+        if (trimmedHeader.isEmpty()) {
+            return null;
+        }
+
+        if (trimmedHeader.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            String bearerToken = trimmedHeader.substring(7).trim();
+            return bearerToken.isEmpty() ? null : bearerToken;
+        }
+
+        return trimmedHeader;
     }
 }

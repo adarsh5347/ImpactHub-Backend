@@ -86,6 +86,40 @@ class ProjectCreationIntegrationTest {
                 .andExpect(jsonPath("$.endDate").value("2026-03-28"));
     }
 
+    @Test
+    void approvedNgoCanCreateProjectWithRawAuthorizationToken() throws Exception {
+        String ngoToken = registerApproveAndLoginNgo();
+
+        mockMvc.perform(post("/api/projects")
+                        .header("Authorization", ngoToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title":"Health Camp",
+                                  "fundingGoal":12000
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.title").value("Health Camp"));
+    }
+
+    @Test
+    void approvedNgoCanCreateProjectWithLowercaseBearerPrefix() throws Exception {
+        String ngoToken = registerApproveAndLoginNgo();
+
+        mockMvc.perform(post("/api/projects")
+                        .header("Authorization", "bearer " + ngoToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title":"School Drive",
+                                  "fundingGoal":15000
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.title").value("School Drive"));
+    }
+
     private String registerApproveAndLoginNgo() throws Exception {
         String email = uniqueEmail();
         String password = "Ngo@12345";
